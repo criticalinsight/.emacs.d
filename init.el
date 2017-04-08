@@ -449,18 +449,31 @@ isn't there and triggers an error"
   :config
 
   (defun clojure-pretty-fn ()
-    (font-lock-add-keywords nil `(("(\\(partial\\>\\)"
-                                   (0 (progn (compose-region (match-beginning 1)
-                                                             (match-end 1)
-                                                             ?μ) nil)))))
-    (font-lock-add-keywords nil `(("(\\(fn\\>\\)"
-                                   (0 (progn (compose-region (match-beginning 1)
-                                                             (match-end 1)
-                                                             ?λ) nil)))))
-    (font-lock-add-keywords nil `(("(\\(atom\\>\\)"
-                                   (0 (progn (compose-region (match-beginning 1)
-                                                             (match-end 1)
-                                                             ?☢) nil)))))
+    (font-lock-add-keywords
+     'clojure-mode `(("(\\(partial\\>\\)"
+                      (0 (progn (compose-region (match-beginning 1)
+                                                (match-end 1)
+                                                ?μ) nil)))))
+    (font-lock-add-keywords
+     'clojure-mode `(("(\\(fn\\>\\)"
+                      (0 (progn (compose-region (match-beginning 1)
+                                                (match-end 1)
+                                                ?λ) nil)))))
+    (font-lock-add-keywords
+     'clojure-mode `(("(\\(defn\\>\\)"
+                      (0 (progn (compose-region (match-beginning 1)
+                                                (match-end 1)
+                                                ?ζ) nil)))))
+    (font-lock-add-keywords
+     'clojure-mode `(("(\\(atom\\>\\)"
+                      (0 (progn (compose-region (match-beginning 1)
+                                                (match-end 1)
+                                                ?☢) nil)))))
+    (font-lock-add-keywords
+     'clojure-mode `(("(\\(contains\\?\\>\\)"
+                      (0 (progn (compose-region (match-beginning 1)
+                                                (match-end 1)
+                                                ?∈) nil)))))
 
     (font-lock-add-keywords
      'clojure-mode `(("\\(#\\)("
@@ -470,7 +483,7 @@ isn't there and triggers an error"
     (font-lock-add-keywords
      'clojure-mode `(("\\(#\\){"
                       (0 (progn (compose-region (match-beginning 1)
-                                                (match-end 1) "∈")
+                                                (match-end 1) "∪")
                                 nil))))))
 
   (add-hook 'clojure-mode-hook 'clojure-pretty-fn)
@@ -682,6 +695,8 @@ isn't there and triggers an error"
 
 (use-package sass-mode :ensure t)
 
+(use-package systemd :ensure t)
+
 ;;; Programming/Miscellaneous
 
 (use-package rainbow-mode :ensure t
@@ -801,9 +816,13 @@ the (^:fold ...) expressions."
   (add-hook 'perl-mode-hook       'hs-minor-mode)
   (add-hook 'sh-mode-hook         'hs-minor-mode)
   (add-hook 'clojure-mode-hook    'hs-clojure-mode-hook)
-)
+  )
 
 ;;; Writing
+
+(use-package unicode-fonts :ensure t :demand t
+  :config
+  (unicode-fonts-setup))
 
 (use-package org
   :mode ("\\.org\\'" . org-mode)
@@ -887,6 +906,10 @@ the (^:fold ...) expressions."
   (org-insert-heading-respect-content)
   (org-metaright)
   (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)")))
+
+(defun phantasm-connect ()
+  (interactive)
+  (cider-connect "phantasm-dev.grammarly.io" 9999 nil))
 
 ;; Customizations
 

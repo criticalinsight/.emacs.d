@@ -34,6 +34,8 @@
  '(clojure-defun-indents
    (quote
     (set-content-view! on-ui transact fact facts fact-group)))
+ '(company-quickhelp-delay 0.5)
+ '(company-quickhelp-mode t)
  '(completion-styles (quote (basic partial-completion emacs22)))
  '(create-lockfiles nil)
  '(custom-enabled-themes (quote (sanityinc-tomorrow-day)))
@@ -105,7 +107,7 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (visual-regexp magit wakatime-mode magit-gh-pulls gh zencoding-mode xmlgen use-package thesaurus terraform-mode sunrise-x-tabs sunrise-x-mirror sunrise-x-loop sunrise-x-checkpoints smex refheap rainbow-mode pcre2el ox-reveal openwith nlinum nginx-mode names lua-mode langtool javap-mode inform7-mode ido-ubiquitous idle-highlight-mode htmlize highlight-symbol helm-swoop groovy-mode graphviz-dot-mode gradle-mode goto-last-change git-timemachine gist floobits fill-column-indicator expand-region elisp-slime-nav dockerfile-mode company-quickhelp color-theme-sanityinc-tomorrow clj-refactor centered-window-mode beacon base16-theme auctex aggressive-indent ac-slime ac-cider)))
+    (unicode-fonts systemd docker-tramp ac-cider company-flx java-snippets clj-refactor cider visual-regexp magit-gh-pulls gh zencoding-mode xmlgen use-package thesaurus terraform-mode sunrise-x-tabs sunrise-x-mirror sunrise-x-loop sunrise-x-checkpoints smex refheap rainbow-mode pcre2el ox-reveal openwith nlinum nginx-mode names lua-mode langtool javap-mode inform7-mode ido-ubiquitous idle-highlight-mode htmlize highlight-symbol helm-swoop groovy-mode graphviz-dot-mode gradle-mode goto-last-change git-timemachine gist floobits fill-column-indicator expand-region elisp-slime-nav dockerfile-mode company-quickhelp color-theme-sanityinc-tomorrow centered-window-mode beacon base16-theme auctex aggressive-indent ac-slime)))
  '(pop-up-windows nil)
  '(projectile-cache-file "/home/unlogic/.emacs.d/var/projectile.cache")
  '(projectile-enable-caching nil)
