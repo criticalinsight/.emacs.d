@@ -132,4 +132,38 @@ A prefix argument is handled like `recenter':
         (t
          (count-words--buffer-message))))
 
+(defhydra hydra-scale-text (:color red :hint nil)
+  "^
+_=_: increase text scale   _-_: decrease text scale   _0_: reset text scale   _q_: cancel
+"
+  ("=" text-scale-increase)
+  ("-" text-scale-decrease)
+  ("0" (lambda () (interactive) (text-scale-set 0)))
+  ("q" nil))
+
+(defun usefuls-zone-out ()
+  (interactive)
+  (let ((zone-programs '(zone-pgm-jitter
+                         zone-pgm-putz-with-case
+                         zone-pgm-dissolve
+                         zone-pgm-explode
+                         zone-pgm-rotate
+                         zone-pgm-rotate-LR-lockstep
+                         zone-pgm-rotate-RL-lockstep
+                         zone-pgm-rotate-LR-variable
+                         zone-pgm-rotate-RL-variable
+                         zone-pgm-drip
+                         zone-pgm-drip-fretfully
+                         zone-pgm-five-oclock-swan-dive
+                         zone-pgm-martini-swan-dive
+                         zone-pgm-rat-race
+                         zone-pgm-stress
+                         zone-pgm-random-life)))
+    (zone)))
+
+(defun usefuls-zone-screensaver ()
+  (interactive)
+  (setf usefuls-zone-screensaver-timer (run-with-idle-timer 300 t 'usefuls-zone-out)))
+
+;; (cancel-timer usefuls-zone-screensaver-timer)
 (provide 'usefuls)

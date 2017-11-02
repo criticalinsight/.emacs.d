@@ -82,8 +82,7 @@
     "C-\\" kill-this-buffer
 
     "C-n" create-temp-buffer
-    "C-+" text-scale-increase
-    "C--" text-scale-decrease
+    "C-M-z" hydra-scale-text/body
     "C-x 0" (lambda () (interactive) (other-window -1))
     "<S-left>" windmove-left
     "<S-right>" windmove-right

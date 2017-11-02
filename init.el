@@ -170,6 +170,10 @@
          "<C-M-down>" mc/mark-next-like-this-symbol
          "C-c m" mc/mark-all-like-this-dwim))
 
+(use-package phi-search :ensure t
+  :keys ("C-c s s" phi-search
+         "C-c s r" phi-search-backward))
+
 (use-package visual-regexp :ensure t
   :keys ("M-%" vr/query-replace)
   :init
@@ -303,7 +307,11 @@ isn't there and triggers an error"
 
 (use-package usefuls :demand t
   :keys (:override
-         "C-M-q" narrow-or-widen-dwim))
+         "C-M-q" narrow-or-widen-dwim)
+  :config
+  (usefuls-zone-screensaver))
+
+(use-package vlf :ensure t)
 
 ;;; Programming/Version Control
 
@@ -489,10 +497,6 @@ isn't there and triggers an error"
   (add-hook 'clojure-mode-hook 'clojure-pretty-fn)
   (add-hook 'clojure-mode-hook
             (lambda ()
-              (setq-local
-               clojure-defun-indents
-               '(set-content-view! on-ui transact fact facts fact-group))
-              (put 'defactivity 'clojure-backtracking-indent '(4 (2)))
               (put 's/defn 'clojure-doc-string-elt 4)))
 
   (use-package cider :ensure t :pin melpa
@@ -531,7 +535,8 @@ isn't there and triggers an error"
              ";" cider-inspector-next-inspectable-object
              "p" cider-inspector-previous-inspectable-object
              "C-;" cider-inspector-operate-on-point
-             "C-p" cider-inspector-pop))
+             "C-p" cider-inspector-pop
+             "r" cider-reinspect))
 
     (defun cider-inspect-usual ()
       (interactive)
@@ -697,6 +702,8 @@ isn't there and triggers an error"
 
 (use-package systemd :ensure t)
 
+(use-package elm-mode :ensure t)
+
 ;;; Programming/Miscellaneous
 
 (use-package rainbow-mode :ensure t
@@ -802,6 +809,11 @@ the (^:fold ...) expressions."
 
        (while (ignore-errors (re-search-forward "\\^:fold"))
          (hs-hide-block)
+         (next-line))
+
+       (beginning-of-buffer)
+       (while (ignore-errors (re-search-forward "^(s/fdef"))
+         (hs-hide-block)
          (next-line)))))
 
   (defun hs-clojure-mode-hook ()
@@ -826,6 +838,8 @@ the (^:fold ...) expressions."
 
 (use-package org
   :mode ("\\.org\\'" . org-mode)
+  :keys (org-mode-map
+         "C-'" forward-char)
   :config
   (use-package ox-reveal :ensure t
     :demand t
@@ -903,13 +917,38 @@ the (^:fold ...) expressions."
 
 (defun work-new-day ()
   (interactive)
+  (end-of-buffer)
   (org-insert-heading-respect-content)
   (org-metaright)
-  (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)")))
+  (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)"))
+  (org-metaleft)
+  (reindent-then-newline-and-indent)
+  (reindent-then-newline-and-indent)
+  (org-cycle)
+  (insert "- "))
 
 (defun phantasm-connect ()
   (interactive)
   (cider-connect "phantasm-dev.grammarly.io" 9999 nil))
+
+(setq grammarly-cider-services
+      '(("phantasm" . ("phantasm-dev.grammarly.io" 9999))
+        ("feedbacks-pipeline" . ("feedbacks.cpgr.io" 9999))
+        ("thesaurus" . ("thesaurus.cpgr.io" 9999))
+        ("livestream" . ("livestream.cpgr.io" 9999))))
+
+(defun grammarly-cider-connect-read-server-name ()
+  (let* ((choices (mapcar #'car grammarly-cider-services))
+         (minibuffer-completion-table choices)
+         (ido-max-prospects 10))
+    (ido-completing-read "Server: " choices nil nil
+                         nil 'extended-command-history (car choices))))
+
+(defun grammarly-cider-connect ()
+  (interactive)
+  (let ((server (grammarly-cider-connect-read-server-name)))
+    (destructuring-bind (_ host port) (assoc server grammarly-cider-services)
+      (cider-connect host port))))
 
 ;; Customizations
 
