@@ -502,8 +502,12 @@ isn't there and triggers an error"
   (use-package cider :ensure t :pin melpa
     :keys (:global
            :local cider-mode-map
-           "C-c C-t" cider-toggle-trace-var
-           "C-c i" cider-inspect-usual)
+           "C-c t" cider-toggle-trace-var
+           "C-c i" cider-inspect-usual
+           "C-c C-z" cider-switch-to-repl-connection-buffer
+           "C-c C-e" cider-eval-last-sexp-in-context
+           "C-c C-t M-." cider-test-jump-to-function-test
+           "C-c C-t a" cider-test-macroexpand-are)
     :commands (cider-connect cider-jack-in)
     :config
     (add-hook 'cider-mode-hook 'eldoc-mode)
@@ -544,23 +548,39 @@ isn't there and triggers an error"
                                                          (cider-sexp-at-point))))
         (cider-inspect-expr expression (cider-current-ns))))
 
-    (use-package ac-cider :ensure t
-      :config
-      (add-hook 'cider-mode-hook 'ac-flyspell-workaround)
-      (add-hook 'cider-mode-hook 'ac-cider-setup)
-      (add-hook 'cider-repl-mode-hook 'ac-cider-setup)
+    (defvar cider-inspect-last-inspected-expr nil)
 
-      (eval-after-load "auto-complete"
-        '(progn
-           (add-to-list 'ac-modes 'cider-mode)
-           (add-to-list 'ac-modes 'cider-repl-mode)))
+    (defun cider-inspect-last-sexp ()
+      "Inspect the result of the the expression preceding point."
+      (interactive)
+      (let ((expr (cider-last-sexp)))
+        (setq cider-inspect-last-inspected-expr expr)
+        (cider-inspect-expr expr (cider-current-ns))))
 
-      (defun set-auto-complete-as-completion-at-point-function ()
-        (setq completion-at-point-functions '(auto-complete)))
+    (defun cider-reinspect ()
+      "Like refresh, but re-evaluates the last expression."
+      (interactive)
+      (cider-popup-buffer-quit-function)
+      (cider-inspect-expr cider-inspect-last-inspected-expr (cider-current-ns)))
 
-      (add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
-      (add-hook 'cider-mode-hook 'set-auto-complete-as-completion-at-point-function)
-      (add-hook 'cider-repl-mode-hook 'set-auto-complete-as-completion-at-point-function)))
+    (defun cider-switch-to-repl-connection-buffer (&optional set-namespace)
+      (interactive "P")
+      (cider--switch-to-repl-buffer (cider-current-connection) set-namespace))
+
+    (defun cider-test-jump-to-function-test ()
+      (interactive)
+      (cider-try-symbol-at-point
+       "Symbol"
+       (lambda (var)
+         (let* ((info (cider-var-info var))
+                (ns (nrepl-dict-get info "ns"))
+                (var (nrepl-dict-get info "name")))
+           (cider-find-var nil (concat ns "-test/" var "-test") nil)))))
+
+    (defun cider-test-macroexpand-are ()
+      (interactive)
+      (cider-macroexpand-1-inplace)
+      (cider-macroexpand-1-inplace))
 
   (use-package clj-refactor :ensure t :pin melpa-stable
     :config
