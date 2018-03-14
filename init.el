@@ -322,6 +322,8 @@ isn't there and triggers an error"
   (remove-hook 'magit-status-sections-hook 'magit-insert-stashes)
   (magit-add-section-hook 'magit-status-sections-hook
                           'magit-insert-stashes 'magit-insert-untracked-files)
+  (magit-add-section-hook 'magit-status-sections-hook
+                          'magit-insert-unpushed-to-upstream
 
   (defun magit-section-highlight-less (section _)
     (magit-section-case
