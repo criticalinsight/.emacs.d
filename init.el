@@ -96,24 +96,23 @@
 (use-package sudo :commands sudo-find-file)
 
 (use-package stesla
-  :keys (:override
-         "C-." stesla-rotate-buffers
-         "C-," stesla-rotate-backwards))
+  :bind* (("C-." . stesla-rotate-buffers)
+          ("C-," . stesla-rotate-backwards)))
 
 (use-package sunrise-commander :ensure t
-  :keys ("<f7>" sunrise
-         "<C-f7>" sunrise-cd-resize
+  :bind (("<f7>" . sunrise)
+         ("<C-f7>" . sunrise-cd-resize)
 
-         sr-mode-map
-         ";" dired-next-line
-         "C-;" sr-advertised-find-file
-         "C-h" sr-go-home
-         "j" ido-sunrise
-         "C-c C-o" sr-open-custom-terminal
+         :map sr-mode-map
+         (";" . dired-next-line)
+         ("C-;" . sr-advertised-find-file)
+         ("C-h" . sr-go-home)
+         ("j" . ido-sunrise)
+         ("C-c C-o" . sr-open-custom-terminal)
 
-         sr-tabs-mode-map
-         "C-j" sr-cycle-bookmark
-         "C-p" sr-dired-prev-subdir)
+         :map sr-tabs-mode-map
+         ("C-j" . sr-cycle-bookmark)
+         ("C-p" . sr-dired-prev-subdir))
   :config
   (use-package sunrise-x-checkpoints :ensure t)
   (use-package sunrise-x-loop :ensure t)
@@ -165,17 +164,17 @@
   (openwith-mode t))
 
 (use-package multiple-cursors :ensure t
-  :keys ("C-M-<mouse-1>" mc/add-cursor-on-click
-         "<C-down>" mc/mark-next-like-this
-         "<C-M-down>" mc/mark-next-like-this-symbol
-         "C-c m" mc/mark-all-like-this-dwim))
+  :bind (("C-M-<mouse-1>" . mc/add-cursor-on-click)
+         ("<C-down>" . mc/mark-next-like-this)
+         ("<C-M-down>" . mc/mark-next-like-this-symbol)
+         ("C-c m" . mc/mark-all-like-this-dwim)))
 
 (use-package phi-search :ensure t
-  :keys ("C-c s s" phi-search
-         "C-c s r" phi-search-backward))
+  :bind (("C-c s s" . phi-search)
+         ("C-c s r" . phi-search-backward)))
 
 (use-package visual-regexp :ensure t
-  :keys ("M-%" vr/query-replace)
+  :bind (("M-%" . vr/query-replace))
   :init
   ;; Redefine dired search-and-replace
   (defun dired-do-find-regexp-and-replace (from to arg)
@@ -195,7 +194,7 @@
         (kill-buffer)))))
 
 (use-package ediff
-  :keys ("C-c d" ediff-opened-buffers)
+  :bind (("C-c d" . ediff-opened-buffers))
   :commands ediff
   :config
   (add-hook 'ediff-startup-hook (lambda () (ediff-toggle-split)))
@@ -258,7 +257,7 @@ isn't there and triggers an error"
   :config (midnight-delay-set 'midnight-delay "11:59pm"))
 
 (use-package smex :ensure t
-  :keys ("M-x" smex)
+  :bind (("M-x" . smex))
   :config
   (setq smex-save-file (concat user-emacs-directory "var/.smex-items"))
   (smex-initialize))
@@ -306,8 +305,7 @@ isn't there and triggers an error"
   (daycycle-init '-theme-set 'auto))
 
 (use-package usefuls :demand t
-  :keys (:override
-         "C-M-q" narrow-or-widen-dwim)
+  :bind* (("C-M-q" . narrow-or-widen-dwim))
   :config
   (usefuls-zone-screensaver))
 
@@ -316,8 +314,8 @@ isn't there and triggers an error"
 ;;; Programming/Version Control
 
 (use-package magit :ensure t
-  :keys ("C-x g" magit-status
-         "<f8>" magit-blame)
+  :bind (("C-x g" . magit-status)
+         ("<f8>" . magit-blame))
   :commands (magit-show-commit)
   :config
   (setq magit-last-seen-setup-instructions "1.4.0")
@@ -339,9 +337,9 @@ isn't there and triggers an error"
     :init (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls)))
 
 (use-package git-timemachine :ensure t
-  :keys ("<C-f8>" git-timemachine
-         :local
-         "c" git-timemachine-show-commit)
+  :bind (("<C-f8>" . git-timemachine)
+         :map git-timemachine-mode-map
+         ("c" . git-timemachine-show-commit))
   :config
   (defun git-timemachine-show-commit ()
     (interactive)
@@ -402,8 +400,8 @@ isn't there and triggers an error"
 
 (use-package vc-annotate :demand t
   :commands vc-annotate
-  :keys (:local
-         "c" vc-annotate-show-commit-at-line)
+  :bind (:map vc-annotate-mode-map
+         ("c" . vc-annotate-show-commit-at-line))
   :config
   (setq vc-ignore-dir-regexp
         (format "\\(%s\\)\\|\\(%s\\)"
@@ -500,27 +498,25 @@ isn't there and triggers an error"
               (put 's/defn 'clojure-doc-string-elt 4)))
 
   (use-package cider :ensure t :pin melpa
-    :keys (:global
-           :local cider-mode-map
-           "C-c t" cider-toggle-trace-var
-           "C-c i" cider-inspect-usual
-           "C-c C-z" cider-switch-to-repl-connection-buffer
-           "C-c C-e" cider-eval-last-sexp-in-context
-           "C-c C-t M-." cider-test-jump-to-function-test
-           "C-c C-t a" cider-test-macroexpand-are)
+    :bind (:map cider-mode-map
+           ("C-c t" . cider-toggle-trace-var)
+           ("C-c i" . cider-inspect)
+           ("C-c C-z" . cider-switch-to-repl-connection-buffer)
+           ("C-c C-e" . cider-eval-last-sexp-in-context)
+           ("C-c C-t M-." . cider-test-jump-to-function-test)
+           ("C-c C-t a" . cider-test-macroexpand-are))
     :commands (cider-connect cider-jack-in)
     :config
     (add-hook 'cider-mode-hook 'eldoc-mode)
 
     (use-package company :ensure t :demand t
-      :keys (:global                    ;empty
-             :local company-mode-map
-             "TAB" company-indent-or-complete-common
-             "M-SPC" company-complete
+      :bind (:map company-mode-map
+             ("TAB" . company-indent-or-complete-common)
+             ("M-SPC" . company-complete)
 
-             :local company-active-map
-             "TAB" company-complete-selection
-             "<tab>" company-complete-selection)
+             :map company-active-map
+             ("TAB" . company-complete-selection)
+             ("<tab>" . company-complete-selection))
       :config
       (add-hook 'cider-repl-mode-hook #'company-mode)
       (add-hook 'cider-mode-hook #'company-mode)
@@ -533,14 +529,13 @@ isn't there and triggers an error"
         :config
         (company-quickhelp-mode 1)))
 
-    (use-package cider-inspector
-      :demand t
-      :keys (:local
-             ";" cider-inspector-next-inspectable-object
-             "p" cider-inspector-previous-inspectable-object
-             "C-;" cider-inspector-operate-on-point
-             "C-p" cider-inspector-pop
-             "r" cider-reinspect))
+    (use-package cider-inspector :demand t
+      :bind (:map cider-inspector-mode-map
+             (";" . cider-inspector-next-inspectable-object)
+             ("p" . cider-inspector-previous-inspectable-object)
+             ("C-;" . cider-inspector-operate-on-point)
+             ("C-p" . cider-inspector-pop)
+             ("r" . cider-reinspect)))
 
     (defun cider-inspect-usual ()
       (interactive)
@@ -693,9 +688,9 @@ isn't there and triggers an error"
 (use-package toml-mode :ensure t)
 
 (use-package markdown-mode :ensure t
-  :keys (markdown-mode-map
-         "C-c C-l" markdown-smart-insert-link
-         "C-c C-c C-c" markdown-insert-gfm-code-block)
+  :bind (:map markdown-mode-map
+         ("C-c C-l" . markdown-smart-insert-link)
+         ("C-c C-c C-c" . markdown-insert-gfm-code-block))
   :config
   (defun markdown-smart-insert-link ()
     (interactive)
@@ -736,10 +731,10 @@ isn't there and triggers an error"
   (add-hook 'css-mode-hook 'rainbow-turn-on))
 
 (use-package projectile :ensure t
-  :keys ("M-f" projectile-find-file
+  :bind (("M-f" . projectile-find-file)
 
-         ido-file-dir-completion-map
-         "M-f" projectile-find-file-from-ido)
+         :map ido-file-dir-completion-map
+         ("M-f" . projectile-find-file-from-ido))
   :init
   (defvar last-ido-dir nil)
 
@@ -763,15 +758,13 @@ isn't there and triggers an error"
                 (setq-local projectile-mode-line "Projectile")))))
 
 (use-package helm-ag :ensure t ;; helm-grep with silver searcher
-  :keys (:override
-         "M-h" helm-do-ag-project-root-custom
-         "M-H" helm-do-ag
-
-         helm-ag-map
-         "C-;" helm-next-line
-         "M-;" helm-goto-next-file
-         "M-p" helm-goto-precedent-file
-         "<right>" helm-execute-persistent-action)
+  :bind* (("M-h" . helm-do-ag-project-root-custom)
+          ("M-H" . helm-do-ag))
+  :bind (:map helm-ag-map
+         ("C-;" . helm-next-line)
+         ("M-;" . helm-goto-next-file)
+         ("M-p" . helm-goto-precedent-file)
+         ("<right>" . helm-execute-persistent-action))
   :config
   (defun helm-do-ag-project-root-custom (sym-at-p)
     (interactive "P")
@@ -779,7 +772,7 @@ isn't there and triggers an error"
       (helm-do-ag-project-root))))
 
 (use-package hippie-exp
-  :keys ("M-/" hippie-expand)
+  :bind (("M-/" . hippie-expand))
   :config
   (dolist (f '(try-expand-line try-expand-list try-complete-file-name-partially))
     (delete f hippie-expand-try-functions-list))
@@ -858,8 +851,8 @@ the (^:fold ...) expressions."
 
 (use-package org
   :mode ("\\.org\\'" . org-mode)
-  :keys (org-mode-map
-         "C-'" forward-char)
+  :bind (:map org-mode-map
+         ("C-'" . forward-char))
   :config
   (use-package ox-reveal :ensure t
     :demand t
@@ -868,11 +861,10 @@ the (^:fold ...) expressions."
   (setq org-inhibit-startup-visibility-stuff t))
 
 (use-package thesaurus :ensure t
-  :keys ("C-x t" thesaurus-choose-synonym-and-replace)
+  :bind (("C-x t" . thesaurus-choose-synonym-and-replace))
   :config (thesaurus-set-bhl-api-key-from-file "~/.bighugelabsapi.key"))
 
 (use-package centered-window-mode :ensure t
-  :keys ("<f12>" serenity-mode)
   :config
   (defvar-local hidden-mode-line-mode nil)
 
