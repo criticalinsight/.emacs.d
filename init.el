@@ -267,9 +267,16 @@ isn't there and triggers an error"
   (setq save-place-file (concat user-emacs-directory "var/places"))
   (setq-default save-place t))
 
-(use-package recentf :demand t :config (recentf-mode 1))
+(use-package recentf :demand t
+  :config
+  (recentf-mode 1))
 
 (use-package undo-tree :ensure t :demand t :config (global-undo-tree-mode))
+
+(use-package all-the-icons :ensure t
+  :config
+  ;; (all-the-icons-install-fonts)
+  )
 
 (use-package mainline :demand t ;; custom status line
   :config
@@ -285,17 +292,21 @@ isn't there and triggers an error"
           (setq mainline-color2 "#efefef")
           (setq mainline-color3 "#70c0b1")
           (setq mainline-color-fg "black")
+          ;; (set-face-background 'mode-line "#d6d6d6")
           (custom-set-faces
            '(show-paren-match ((t (:foreground "grey70" :bold nil :background "#008800"))))
-           '(show-paren-mismatch ((t (:foreground "grey70" :bold nil :background "#880000")))))
+           '(show-paren-mismatch ((t (:foreground "grey70" :bold nil :background "#880000"))))
+           '(mode-line ((t (:background "#d6d6d6" :box nil)))))
           (color-theme-sanityinc-tomorrow-day))
       (setq mainline-color1 "#444444")
       (setq mainline-color2 "#222222")
       (setq mainline-color3 "#293B3A")
       (setq mainline-color-fg "white")
+      ;; (set-face-background 'mode-line "#444444")
       (custom-set-faces
        '(show-paren-match ((t (:foreground "#00ff00" :bold t :background unspecified))))
-       '(show-paren-mismatch ((t (:foreground "#ff0000" :bold t :background unspecified)))))
+       '(show-paren-mismatch ((t (:foreground "#ff0000" :bold t :background unspecified))))
+       '(mode-line ((t (:background "#444444" :box nil)))))
       (color-theme-sanityinc-tomorrow-eighties))
     (setq fci-rule-color "sienna")
     (setq-default fci-rule-color "sienna")
@@ -322,8 +333,11 @@ isn't there and triggers an error"
   (remove-hook 'magit-status-sections-hook 'magit-insert-stashes)
   (magit-add-section-hook 'magit-status-sections-hook
                           'magit-insert-stashes 'magit-insert-untracked-files)
+  ;; Don't show recent commits
   (magit-add-section-hook 'magit-status-sections-hook
                           'magit-insert-unpushed-to-upstream
+                          'magit-insert-unpushed-to-upstream-or-recent
+                          'replace)
 
   (defun magit-section-highlight-less (section _)
     (magit-section-case

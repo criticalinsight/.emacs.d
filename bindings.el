@@ -120,11 +120,6 @@
     "C-w" paredit-backward-kill-word
     "<C-backspace>" paredit-backward-kill-word
 
-    ;; cider
-    :local cider-mode-map cider-mode-hook
-    "C-c C-t" cider-toggle-trace-var
-    "C-c i" cider-inspect
-
     :local cider-inspector-mode-map "cider-inspect.el"
     ";" cider-inspector-next-inspectable-object
     "p" cider-inspector-previous-inspectable-object

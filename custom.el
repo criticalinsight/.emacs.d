@@ -119,7 +119,7 @@
  '(projectile-enable-caching nil)
  '(projectile-mode-line " Projectile")
  '(recentf-auto-cleanup (quote never))
- '(recentf-max-saved-items 20000)
+ '(recentf-max-saved-items 200)
  '(refheap-token "39bee1d0-8aa8-4168-ba05-24627adb1c9b")
  '(refheap-user "alexyakushev")
  '(require-final-newline t)

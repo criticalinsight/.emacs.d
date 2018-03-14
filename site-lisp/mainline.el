@@ -1,4 +1,4 @@
-;;; mainline.el --- modeline replacement forked from powerline.el
+;;; mainline.el --- modeline replacement forked from powerline.el, much simplified
 
 ;; Author: Jason Milkins
 ;; Version: 1.0.2
@@ -8,15 +8,6 @@
 ;;; setup autoloads)
 ;;;
 ;;;     (require 'mainline)
-;;;
-;;; You can customize the separator graphic by setting the custom variable
-;;;
-;;;     mainline-arrow-shape
-;;;
-;;; possible values:
-;;;
-;;;     arrow
-;;;     slant
 
 (require 'projectile)
 
@@ -36,321 +27,6 @@
                     :box nil)
 
 (scroll-bar-mode -1)
-
-(defun slant-left-xpm
-    (color1 color2)
-  "Return an XPM left slant string representing."
-  (create-image
-   (format
-    (if (> (x-display-pixel-height) 1080)
-        "/* XPM */
-static char * slant_left[] = {
-\"17 34 2 1\",
-\"@ c %s\",
-\"  c %s\",
-\"@                \",
-\"@                \",
-\"@@               \",
-\"@@               \",
-\"@@@              \",
-\"@@@              \",
-\"@@@@             \",
-\"@@@@             \",
-\"@@@@@            \",
-\"@@@@@            \",
-\"@@@@@@           \",
-\"@@@@@@           \",
-\"@@@@@@@          \",
-\"@@@@@@@          \",
-\"@@@@@@@@         \",
-\"@@@@@@@@         \",
-\"@@@@@@@@@        \",
-\"@@@@@@@@@        \",
-\"@@@@@@@@@@       \",
-\"@@@@@@@@@@       \",
-\"@@@@@@@@@@@      \",
-\"@@@@@@@@@@@      \",
-\"@@@@@@@@@@@@     \",
-\"@@@@@@@@@@@@     \",
-\"@@@@@@@@@@@@@    \",
-\"@@@@@@@@@@@@@    \",
-\"@@@@@@@@@@@@@@   \",
-\"@@@@@@@@@@@@@@   \",
-\"@@@@@@@@@@@@@@@  \",
-\"@@@@@@@@@@@@@@@  \",
-\"@@@@@@@@@@@@@@@@ \",
-\"@@@@@@@@@@@@@@@@ \",
-\"@@@@@@@@@@@@@@@@@\",
-\"@@@@@@@@@@@@@@@@@\"};"
-
-"/* XPM */
-static char * slant_left[] = {
-\"12 18 2 1\",
-\"@ c %s\",
-\"  c %s\",
-\"@@@@         \",
-\"@@@@         \",
-\"@@@@@        \",
-\"@@@@@        \",
-\"@@@@@@       \",
-\"@@@@@@       \",
-\"@@@@@@@      \",
-\"@@@@@@@      \",
-\"@@@@@@@@     \",
-\"@@@@@@@@     \",
-\"@@@@@@@@@    \",
-\"@@@@@@@@@    \",
-\"@@@@@@@@@@   \",
-\"@@@@@@@@@@   \",
-\"@@@@@@@@@@@  \",
-\"@@@@@@@@@@@  \",
-\"@@@@@@@@@@@@ \",
-\"@@@@@@@@@@@@\"};")
-           (if color1 color1 "None")
-           (if color2 color2 "None"))
-   'xpm t :ascent 'center))
-
-(defun slant-right-xpm
-    (color1 color2)
-  "Return an XPM right slant string representing@"
-  (create-image
-   (format
-    (if (> (x-display-pixel-height) 1080)
-        "/* XPM */
-static char * slant_right[] = {
-\"17 34 2 1\",
-\"@ c %s\",
-\"  c %s\",
-\"                @\",
-\"                @\",
-\"               @@\",
-\"               @@\",
-\"              @@@\",
-\"              @@@\",
-\"             @@@@\",
-\"             @@@@\",
-\"            @@@@@\",
-\"            @@@@@\",
-\"           @@@@@@\",
-\"           @@@@@@\",
-\"          @@@@@@@\",
-\"          @@@@@@@\",
-\"         @@@@@@@@\",
-\"         @@@@@@@@\",
-\"        @@@@@@@@@\",
-\"        @@@@@@@@@\",
-\"       @@@@@@@@@@\",
-\"       @@@@@@@@@@\",
-\"      @@@@@@@@@@@\",
-\"      @@@@@@@@@@@\",
-\"     @@@@@@@@@@@@\",
-\"     @@@@@@@@@@@@\",
-\"    @@@@@@@@@@@@@\",
-\"    @@@@@@@@@@@@@\",
-\"   @@@@@@@@@@@@@@\",
-\"   @@@@@@@@@@@@@@\",
-\"  @@@@@@@@@@@@@@@\",
-\"  @@@@@@@@@@@@@@@\",
-\" @@@@@@@@@@@@@@@@\",
-\" @@@@@@@@@@@@@@@@\",
-\"@@@@@@@@@@@@@@@@@\",
-\"@@@@@@@@@@@@@@@@@\"};"
-      "/* XPM */
-static char * slant_right[] = {
-\"12 18 2 1\",
-\"@ c %s\",
-\"  c %s\",
-\"        @@@@\",
-\"        @@@@\",
-\"       @@@@@\",
-\"       @@@@@\",
-\"      @@@@@@\",
-\"      @@@@@@\",
-\"     @@@@@@@\",
-\"     @@@@@@@\",
-\"    @@@@@@@@\",
-\"    @@@@@@@@\",
-\"   @@@@@@@@@\",
-\"   @@@@@@@@@\",
-\"  @@@@@@@@@@\",
-\"  @@@@@@@@@@\",
-\" @@@@@@@@@@@\",
-\" @@@@@@@@@@@\",
-\"@@@@@@@@@@@@\",
-\"@@@@@@@@@@@@\"};")
-           (if color2 color2 "None")
-           (if color1 color1 "None"))
-   'xpm t :ascent 'center))
-
-(defun arrow-left-xpm
-    (color1 color2)
-  "Return an XPM left arrow string representing@"
-  (create-image
-   (format
-    (if (> (x-display-pixel-height) 1080)
-        "/* XPM */
-static char * arrow_left[] = {
-\"17 34 2 1\",
-\"@ c %s\",
-\"  c %s\",
-\"@                \",
-\"@@               \",
-\"@@@              \",
-\"@@@@             \",
-\"@@@@@            \",
-\"@@@@@@           \",
-\"@@@@@@@          \",
-\"@@@@@@@@         \",
-\"@@@@@@@@@        \",
-\"@@@@@@@@@@       \",
-\"@@@@@@@@@@@      \",
-\"@@@@@@@@@@@@     \",
-\"@@@@@@@@@@@@@    \",
-\"@@@@@@@@@@@@@@   \",
-\"@@@@@@@@@@@@@@@  \",
-\"@@@@@@@@@@@@@@@@ \",
-\"@@@@@@@@@@@@@@@@@\",
-\"@@@@@@@@@@@@@@@@@\",
-\"@@@@@@@@@@@@@@@@ \",
-\"@@@@@@@@@@@@@@@  \",
-\"@@@@@@@@@@@@@@   \",
-\"@@@@@@@@@@@@@    \",
-\"@@@@@@@@@@@@     \",
-\"@@@@@@@@@@@      \",
-\"@@@@@@@@@@       \",
-\"@@@@@@@@@        \",
-\"@@@@@@@@         \",
-\"@@@@@@@          \",
-\"@@@@@@           \",
-\"@@@@@            \",
-\"@@@@             \",
-\"@@@              \",
-\"@@               \",
-\"@                \",};"
-      "/* XPM */
-static char * arrow_left[] = {
-\"12 18 2 1\",
-\"@ c %s\",
-\"  c %s\",
-\"@           \",
-\"@@          \",
-\"@@@         \",
-\"@@@@        \",
-\"@@@@@       \",
-\"@@@@@@      \",
-\"@@@@@@@     \",
-\"@@@@@@@@    \",
-\"@@@@@@@@@   \",
-\"@@@@@@@@@   \",
-\"@@@@@@@@    \",
-\"@@@@@@@     \",
-\"@@@@@@      \",
-\"@@@@@       \",
-\"@@@@        \",
-\"@@@         \",
-\"@@          \",
-\"@           \"};")
-           (if color1 color1 "None")
-           (if color2 color2 "None"))
-   'xpm t :ascent 'center))
-
-(defun arrow-right-xpm
-    (color1 color2)
-  "Return an XPM right arrow string representing@"
-  (create-image
-   (format
-    (if (> (x-display-pixel-height) 1080)
-        "/* XPM */
-static char * arrow_right[] = {
-\"17 34 2 1\",
-\"@ c %s\",
-\"  c %s\",
-\"                @\",
-\"               @@\",
-\"              @@@\",
-\"             @@@@\",
-\"            @@@@@\",
-\"           @@@@@@\",
-\"          @@@@@@@\",
-\"         @@@@@@@@\",
-\"        @@@@@@@@@\",
-\"       @@@@@@@@@@\",
-\"      @@@@@@@@@@@\",
-\"     @@@@@@@@@@@@\",
-\"    @@@@@@@@@@@@@\",
-\"   @@@@@@@@@@@@@@\",
-\"  @@@@@@@@@@@@@@@\",
-\" @@@@@@@@@@@@@@@@\",
-\"@@@@@@@@@@@@@@@@@\",
-\"@@@@@@@@@@@@@@@@@\",
-\" @@@@@@@@@@@@@@@@\",
-\"  @@@@@@@@@@@@@@@\",
-\"   @@@@@@@@@@@@@@\",
-\"    @@@@@@@@@@@@@\",
-\"     @@@@@@@@@@@@\",
-\"      @@@@@@@@@@@\",
-\"       @@@@@@@@@@\",
-\"        @@@@@@@@@\",
-\"         @@@@@@@@\",
-\"          @@@@@@@\",
-\"           @@@@@@\",
-\"            @@@@@\",
-\"             @@@@\",
-\"              @@@\",
-\"               @@\",
-\"                @\"};"
-      "/* XPM */
-static char * arrow_right[] = {
-\"12 18 2 1\",
-\"@ c %s\",
-\"  c %s\",
-\"           @\",
-\"          @@\",
-\"         @@@\",
-\"        @@@@\",
-\"       @@@@@\",
-\"      @@@@@@\",
-\"     @@@@@@@\",
-\"    @@@@@@@@\",
-\"   @@@@@@@@@\",
-\"   @@@@@@@@@\",
-\"    @@@@@@@@\",
-\"     @@@@@@@\",
-\"      @@@@@@\",
-\"       @@@@@\",
-\"        @@@@\",
-\"         @@@\",
-\"          @@\",
-\"           @\"};")
-           (if color2 color2 "None")
-           (if color1 color1 "None"))
-   'xpm t :ascent 'center))
-
-;; from memoize.el @ http://nullprogram.com/blog/2010/07/26/
-(defun memoize (func)
-  "Memoize the given function. If argument is a symbol then
-install the memoized function over the original function."
-  (typecase func
-    (symbol (fset func (memoize-wrap (symbol-function func))) func)
-    (function (memoize-wrap func))))
-
-(defun memoize-wrap (func)
-  "Return the memoized version of the given function."
-  (let ((table-sym (gensym))
-        (val-sym (gensym))
-        (args-sym (gensym)))
-    (set table-sym (make-hash-table :test 'equal))
-    `(lambda (&rest ,args-sym)
-       ,(concat (documentation func) "\n(memoized function)")
-       (let ((,val-sym (gethash ,args-sym ,table-sym)))
-         (if ,val-sym
-             ,val-sym
-           (puthash ,args-sym (apply ,func ,args-sym) ,table-sym))))))
-
-(memoize 'slant-left-xpm)
-(memoize 'slant-right-xpm)
-(memoize 'arrow-left-xpm)
-(memoize 'arrow-right-xpm)
 
 (defun mainline-make-face
     (bg &optional fg)
@@ -396,20 +72,11 @@ install the memoized function over the original function."
          (propertize " " 'face plface)
        "")
      (if arrow
-         (propertize " " 'display
-                     (cond ((eq mainline-arrow-shape 'arrow)
-                            (arrow-left-xpm color1 color2))
-                           ((eq mainline-arrow-shape 'slant)
-                            (slant-left-xpm color1 color2))
-                           (t
-                            (arrow-left-xpm color1 color2)))
-                     'local-map (make-mode-line-mouse-map
-                                 'mouse-1 (lambda () (interactive)
-                                            (setq mainline-arrow-shape
-                                                  (cond ((eq mainline-arrow-shape 'arrow)       'slant)
-                                                        ((eq mainline-arrow-shape 'slant)       'arrow)
-                                                        (t                                       'arrow)))
-                                            (redraw-modeline))))
+         (propertize (all-the-icons-alltheicon "wave-left" :v-adjust -0.15)
+                     'face `(:height 1.2
+                             :family ,(all-the-icons-alltheicon-family)
+                             :foreground ,color2
+                             :background ,color1))
        ""))))
 
 (defun mainline-make-right
@@ -418,22 +85,11 @@ install the memoized function over the original function."
         (arrow  (and color1 (not (string= color1 color2)))))
     (concat
      (if arrow
-         (propertize " " 'display
-                     (cond ((eq mainline-arrow-shape 'arrow)
-                            (arrow-right-xpm color1 color2))
-                           ((eq mainline-arrow-shape 'slant)
-                            (slant-right-xpm color1 color2))
-                           ((eq mainline-arrow-shape 'rounded)
-                            (rounded-xpm color1 color2))
-                           (t
-                            (arrow-right-xpm color1 color2)))
-                     'local-map (make-mode-line-mouse-map
-                                 'mouse-1 (lambda () (interactive)
-                                            (setq mainline-arrow-shape
-                                                  (cond ((eq mainline-arrow-shape 'arrow)       'slant)
-                                                        ((eq mainline-arrow-shape 'slant)       'arrow)
-                                                        (t                                      'arrow)))
-                                            (redraw-modeline))))
+         (propertize (all-the-icons-alltheicon "wave-right"  :v-adjust -0.0)
+                     'face `(:height 1.25
+                             :family ,(all-the-icons-alltheicon-family)
+                             :foreground ,color1
+                             :background ,color2))
        "")
      (if arrow
          (propertize " " 'face plface)
@@ -486,21 +142,22 @@ install the memoized function over the original function."
 (defun mainline-interesting-minor-modes ()
   (let ((cached (gethash minor-mode-alist mms-cache)))
     (or cached
-        (propertize
-         (format-mode-line
-          (remove-if (lambda (mm)
-                       (let ((mm-sym (car mm)))
-                         (or (eq mm-sym 'auto-fill-function)
-                             (eq mm-sym 'global-whitespace-mode)
-                             (eq mm-sym 'undo-tree-mode)
-                             (eq mm-sym 'projectile-mode)
-                             (eq mm-sym 'eldoc-mode)
-                             (eq mm-sym 'elisp-slime-nav-mode)
-                             (eq mm-sym 'git-gutter-mode)
-                             (eq mm-sym 'hi-lock-mode)
-                             (eq mm-sym 'wakatime-mode)
-                             (eq mm-sym 'hs-minor-mode))))
-                     minor-mode-alist))))))
+        (substring (propertize
+                    (format-mode-line
+                     (remove-if (lambda (mm)
+                                  (let ((mm-sym (car mm)))
+                                    (or (eq mm-sym 'auto-fill-function)
+                                        (eq mm-sym 'global-whitespace-mode)
+                                        (eq mm-sym 'undo-tree-mode)
+                                        (eq mm-sym 'projectile-mode)
+                                        (eq mm-sym 'eldoc-mode)
+                                        (eq mm-sym 'elisp-slime-nav-mode)
+                                        (eq mm-sym 'git-gutter-mode)
+                                        (eq mm-sym 'hi-lock-mode)
+                                        (eq mm-sym 'wakatime-mode)
+                                        (eq mm-sym 'hs-minor-mode))))
+                                minor-mode-alist)))
+                   1))))
 
 (defun mainline-center-format (str c)
   (let* ((l (length str)))
@@ -523,66 +180,41 @@ install the memoized function over the original function."
         (concat ".." (substring bn (- l (- n 2))))
       bn)))
 
-(defvar vc-cache (make-hash-table :test 'equal))
-
-(defun mainline-get-project-and-branch ()
-  (let ((fn (buffer-file-name)))
-    (if fn
-        (let ((cached (gethash fn vc-cache)))
-          (if cached
-              cached
-            (let* ((pn (and (projectile-project-p) (projectile-project-name)))
-                   (ret (cond ((and vc-mode pn) (concat pn ":" (replace-regexp-in-string ".+[:-]" "" vc-mode)))
-                             (vc-mode (replace-regexp-in-string ".+[:-]" "" vc-mode))
-                             (pn pn))))
-              (puthash fn ret vc-cache)
-              ret)))
-      "")))
-
 (defun mainline-activate ()
   (setq-default
    mode-line-format
    '("%e" (:eval
-           (let* ((classic-bn-length 20)
+           (let* ((buffer-state (format-mode-line "%*"))
+                  (modified-icon (cond
+                                  ((string= buffer-state "-") (all-the-icons-faicon "toggle-off" :v-adjust -0.05))
+                                  ((string= buffer-state "*") (all-the-icons-faicon "toggle-on" :v-adjust -0.05))
+                                  ((string= buffer-state "%") (all-the-icons-faicon "lock" :v-adjust -0.05))))
+                  (classic-bn-length 20)
                   (ww (window-width))
                   (full-buffer-name (mainline-center-format (buffer-name) classic-bn-length))
                   (position-length 16)
-                  (vc (mainline-get-project-and-branch))
-                  (vc-length (if vc (length vc) -1))
                   (mms (mainline-interesting-minor-modes))
                   (mms-length (if (> (length mms) 0) (length mms) -1))
                   (total-length (+ 3 (length full-buffer-name) 3 position-length 3
                                    (length mode-name)
-                                   mms-length 3 vc-length 3 2))
+                                   mms-length 2))
                   (compact? (< ww total-length))
                   (space-for-buffer-name (+ (length full-buffer-name)
-                                            (- ww (- total-length mms-length
-                                                     vc-length))))
+                                            (- ww (- total-length mms-length))))
                   (real-buffer-name (if compact?
                                         (mainline-center-format (mainline-trimmed-buffer-name (buffer-name) space-for-buffer-name)
                                                                 (min classic-bn-length space-for-buffer-name))
-                                      full-buffer-name))
-                  (total-length (if compact?
-                                    (+ (- total-length mms-length
-                                          vc-length 3 (length full-buffer-name))
-                                       (length real-buffer-name))
-                                  total-length))
-                  (skip-space (- ww total-length)))
+                                      full-buffer-name)))
              (concat
-              (mainline-make 'left "%*" mainline-color3)
+              (mainline-make 'left current-input-method-title mainline-color3)
+              (mainline-make 'left modified-icon mainline-color3)
               (mainline-make 'left real-buffer-name mainline-color3 mainline-color1)
               (mainline-make 'left (mainline-percentage 3) mainline-color1)
               (mainline-make 'left "(%4l : %3c)" mainline-color1 mainline-color2)
               (mainline-major-mode 'left mainline-color2)
-              (mainline-make 'center (make-string skip-space 32) mainline-color2)
-              (if compact?
-                  (mainline-make 'center " " mainline-color2)
-                (concat
-                 (mainline-make 'right mms mainline-color2)
-                 (mainline-make 'right vc mainline-color1 mainline-color2)))
-              (mainline-make 'right (concat (or current-input-method-title "EN") " ")
-                             mainline-color3 (if compact?
-                                                 mainline-color2
-                                               mainline-color1))))))))
+              (mainline-make 'left "﻿" mainline-color2)
+              (if compact? ""
+               (mainline-make 'right mms mainline-color1 mainline-color2))))))))
+;; (mainline-activate)
 
 (provide 'mainline)
