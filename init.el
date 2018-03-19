@@ -273,11 +273,6 @@ isn't there and triggers an error"
 
 (use-package undo-tree :ensure t :demand t :config (global-undo-tree-mode))
 
-(use-package all-the-icons :ensure t
-  :config
-  ;; (all-the-icons-install-fonts)
-  )
-
 (use-package mainline :demand t ;; custom status line
   :config
   (setq mainline-arrow-shape 'arrow)
@@ -1011,19 +1006,8 @@ the (^:fold ...) expressions."
 (put 'ido-exit-minibuffer 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
-;; XWidget Webkit
-(defun xwidget-webkit-new-session (url)
-  "Create a new webkit session buffer with URL."
-  (let*
-      ((bufname (generate-new-buffer-name "*xwidget-webkit*"))
-       xw)
-    (setq xwidget-webkit-last-session-buffer (switch-to-buffer
-                                              (get-buffer-create bufname)))
-    (insert " ")
-    (setq xw (xwidget-insert 0 'webkit  bufname 2560 1600))
-    (xwidget-put xw 'callback 'xwidget-webkit-callback)
-    (xwidget-webkit-mode)
-    (xwidget-webkit-goto-uri (xwidget-webkit-last-session) url)))
+(setq browse-url-browser-function (quote browse-url-generic))
+(setq browse-url-generic-program "open")
 
 ;; Local Variables:
 ;; eval: (hs-hide-all)

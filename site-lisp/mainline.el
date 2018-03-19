@@ -20,12 +20,6 @@
 (defcustom mainline-arrow-shape 'arrow
   "Mainline graphic shape")
 
-(set-face-attribute 'mode-line nil
-                    :box nil)
-
-(set-face-attribute 'mode-line-inactive nil
-                    :box nil)
-
 (scroll-bar-mode -1)
 
 (defun mainline-make-face
@@ -55,76 +49,16 @@
         cface)
     nil))
 
-(defun mainline-make-left
-    (string color1 &optional color2 localmap)
-  (let ((plface (mainline-make-face color1))
-        (arrow  (and color2 (not (string= color1 color2)))))
-    (concat
-     (if (or (not string) (string= string ""))
-         ""
-       (propertize " " 'face plface))
-     (if string
-         (if localmap
-             (propertize string 'face plface 'mouse-face plface 'local-map localmap)
-           (propertize string 'face plface))
-       "")
-     (if arrow
-         (propertize " " 'face plface)
-       "")
-     (if arrow
-         (propertize (all-the-icons-alltheicon "wave-left" :v-adjust -0.15)
-                     'face `(:height 1.2
-                             :family ,(all-the-icons-alltheicon-family)
-                             :foreground ,color2
-                             :background ,color1))
-       ""))))
-
-(defun mainline-make-right
-    (string color2 &optional color1 localmap)
-  (let ((plface (mainline-make-face color2))
-        (arrow  (and color1 (not (string= color1 color2)))))
-    (concat
-     (if arrow
-         (propertize (all-the-icons-alltheicon "wave-right"  :v-adjust -0.0)
-                     'face `(:height 1.25
-                             :family ,(all-the-icons-alltheicon-family)
-                             :foreground ,color1
-                             :background ,color2))
-       "")
-     (if arrow
-         (propertize " " 'face plface)
-       "")
-     (if string
-         (if localmap
-             (propertize string 'face plface 'mouse-face plface 'local-map localmap)
-           (propertize string 'face plface))
-       "")
-     (if (or (not string) (string= string ""))
-         ""
-       (propertize " " 'face plface)))))
-
-(defun mainline-make-text
-    (string color &optional fg localmap)
-  (let ((plface (mainline-make-face color)))
-    (if string
-        (if localmap
-            (propertize string 'face plface 'mouse-face plface 'local-map localmap)
-          (propertize string 'face plface))
-      "")))
-
-(defun mainline-make (side string color1 &optional color2 localmap)
-  (cond ((and (eq side 'right) color2) (mainline-make-right  string color1 color2 localmap))
-        ((and (eq side 'left) color2)  (mainline-make-left   string color1 color2 localmap))
-        ((eq side 'left)               (mainline-make-left   string color1 color1 localmap))
-        ((eq side 'right)              (mainline-make-right  string color1 color1 localmap))
-        (t                             (mainline-make-text   string color1 localmap))))
+(defun mainline-make (string color1)
+  (let ((plface (mainline-make-face color1)))
+    (if (or (not string) (string= string ""))
+        ""
+      (propertize (concat " " string) 'face plface))))
 
 (defmacro defmainline (name string)
   `(defun ,(intern (concat "mainline-" (symbol-name name)))
-       (side color1 &optional color2)
-     (mainline-make side
-                    ,string
-                    color1 color2)))
+       (color1)
+     (mainline-make ,string color1)))
 
 (defmainline major-mode
   (propertize (if (stringp mode-name) mode-name "SGML")
@@ -140,24 +74,26 @@
 (defvar mms-cache (make-hash-table :test 'equal))
 
 (defun mainline-interesting-minor-modes ()
-  (let ((cached (gethash minor-mode-alist mms-cache)))
-    (or cached
-        (substring (propertize
-                    (format-mode-line
-                     (remove-if (lambda (mm)
-                                  (let ((mm-sym (car mm)))
-                                    (or (eq mm-sym 'auto-fill-function)
-                                        (eq mm-sym 'global-whitespace-mode)
-                                        (eq mm-sym 'undo-tree-mode)
-                                        (eq mm-sym 'projectile-mode)
-                                        (eq mm-sym 'eldoc-mode)
-                                        (eq mm-sym 'elisp-slime-nav-mode)
-                                        (eq mm-sym 'git-gutter-mode)
-                                        (eq mm-sym 'hi-lock-mode)
-                                        (eq mm-sym 'wakatime-mode)
-                                        (eq mm-sym 'hs-minor-mode))))
-                                minor-mode-alist)))
-                   1))))
+  (or (gethash minor-mode-alist mms-cache)
+      (let ((mms (propertize
+                  (format-mode-line
+                   (remove-if (lambda (mm)
+                                (let ((mm-sym (car mm)))
+                                  (or (eq mm-sym 'auto-fill-function)
+                                      (eq mm-sym 'global-whitespace-mode)
+                                      (eq mm-sym 'undo-tree-mode)
+                                      (eq mm-sym 'projectile-mode)
+                                      (eq mm-sym 'eldoc-mode)
+                                      (eq mm-sym 'elisp-slime-nav-mode)
+                                      (eq mm-sym 'git-gutter-mode)
+                                      (eq mm-sym 'hi-lock-mode)
+                                      (eq mm-sym 'wakatime-mode)
+                                      (eq mm-sym 'hs-minor-mode))))
+                              minor-mode-alist)))))
+        (puthash minor-mode-alist (if (> (length mms) 0)
+                                      (substring mms 1)
+                                    mms)
+                 mms-cache))))
 
 (defun mainline-center-format (str c)
   (let* ((l (length str)))
@@ -184,12 +120,7 @@
   (setq-default
    mode-line-format
    '("%e" (:eval
-           (let* ((buffer-state (format-mode-line "%*"))
-                  (modified-icon (cond
-                                  ((string= buffer-state "-") (all-the-icons-faicon "toggle-off" :v-adjust -0.05))
-                                  ((string= buffer-state "*") (all-the-icons-faicon "toggle-on" :v-adjust -0.05))
-                                  ((string= buffer-state "%") (all-the-icons-faicon "lock" :v-adjust -0.05))))
-                  (classic-bn-length 20)
+           (let* ((classic-bn-length 24)
                   (ww (window-width))
                   (full-buffer-name (mainline-center-format (buffer-name) classic-bn-length))
                   (position-length 16)
@@ -206,15 +137,15 @@
                                                                 (min classic-bn-length space-for-buffer-name))
                                       full-buffer-name)))
              (concat
-              (mainline-make 'left current-input-method-title mainline-color3)
-              (mainline-make 'left modified-icon mainline-color3)
-              (mainline-make 'left real-buffer-name mainline-color3 mainline-color1)
-              (mainline-make 'left (mainline-percentage 3) mainline-color1)
-              (mainline-make 'left "(%4l : %3c)" mainline-color1 mainline-color2)
-              (mainline-major-mode 'left mainline-color2)
-              (mainline-make 'left "﻿" mainline-color2)
+              (mainline-make current-input-method-title mainline-color3)
+              (mainline-make "%*" mainline-color3)
+              (mainline-make real-buffer-name mainline-color3)
+              (mainline-make (mainline-percentage 4) mainline-color1)
+              (mainline-make "(%4l : %3c) " mainline-color1)
+              (mainline-major-mode mainline-color2)
+              (mainline-make "﻿" mainline-color2)
               (if compact? ""
-               (mainline-make 'right mms mainline-color1 mainline-color2))))))))
+               (mainline-make mms mainline-color1))))))))
 ;; (mainline-activate)
 
 (provide 'mainline)
