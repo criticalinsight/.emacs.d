@@ -17,11 +17,6 @@
 (defcustom mainline-color2 "#112230"
   "Mainline color 2 vcs info middle block background")
 
-(defcustom mainline-arrow-shape 'arrow
-  "Mainline graphic shape")
-
-(scroll-bar-mode -1)
-
 (defun mainline-make-face
     (bg &optional fg)
   (if bg
