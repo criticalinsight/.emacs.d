@@ -6,8 +6,6 @@
                '("melpa" . "http://melpa.milkbox.net/packages/"))
   (add-to-list 'package-archives
                '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-  (add-to-list 'package-archives
-               '("SC"  . "http://joseito.republika.pl/sunrise-commander/") t)
   (package-initialize)
 
   (when (not (file-exists-p "~/.emacs.d/.initialized"))
@@ -76,6 +74,7 @@
                    ,(when override-keys `(bind-keys* ,@override-keys)))))))))
 
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
+(add-to-list 'load-path "~/.emacs.d/site-lisp/sunrise-commander/")
 
 (load-file "~/.emacs.d/bindings.el") ;; Load bindings
 
@@ -99,7 +98,7 @@
   :bind* (("C-." . stesla-rotate-buffers)
           ("C-," . stesla-rotate-backwards)))
 
-(use-package sunrise-commander :ensure t
+(use-package sunrise-commander
   :bind (("<f7>" . sunrise)
          ("<C-f7>" . sunrise-cd-resize)
 
@@ -114,10 +113,10 @@
          ("C-j" . sr-cycle-bookmark)
          ("C-p" . sr-dired-prev-subdir))
   :config
-  (use-package sunrise-x-checkpoints :ensure t)
-  (use-package sunrise-x-loop :ensure t)
-  (use-package sunrise-x-mirror :ensure t)
-  (use-package sunrise-x-tabs :ensure t)
+  (use-package sunrise-x-checkpoints)
+  (use-package sunrise-x-loop)
+  (use-package sunrise-x-mirror)
+  (use-package sunrise-x-tabs)
 
   (defun sunrise-cd-resize ()
     (interactive)
