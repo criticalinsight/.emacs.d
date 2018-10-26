@@ -312,9 +312,21 @@ isn't there and triggers an error"
 (use-package usefuls :demand t
   :bind* (("C-M-q" . narrow-or-widen-dwim))
   :config
-  (usefuls-zone-screensaver))
+  ;; (usefuls-zone-screensaver)
+  )
 
 (use-package vlf :ensure t)
+
+(use-package calc
+  :config
+  (setq math-additional-units '((GiB "1024 * MiB" "Giga Byte")
+                                (MiB "1024 * KiB" "Mega Byte")
+                                (KiB "1024 * B" "Kilo Byte")
+                                (B nil "Byte")
+                                (Gib "1024 * Mib" "Giga Bit")
+                                (Mib "1024 * Kib" "Mega Bit")
+                                (Kib "1024 * b" "Kilo Bit")
+                                (b "B / 8" "Bit"))))
 
 ;;; Programming/Version Control
 
