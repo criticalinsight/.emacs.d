@@ -255,6 +255,11 @@ isn't there and triggers an error"
 (use-package midnight :demand t
   :config (midnight-delay-set 'midnight-delay "11:59pm"))
 
+(use-package calendar
+  :config
+  (calendar-set-date-style 'european)
+  (setq calendar-week-start-day 1))
+
 (use-package smex :ensure t
   :bind (("M-x" . smex))
   :config
@@ -478,31 +483,10 @@ isn't there and triggers an error"
 
   (defun clojure-pretty-fn ()
     (font-lock-add-keywords
-     'clojure-mode `(("(\\(partial\\>\\)"
-                      (0 (progn (compose-region (match-beginning 1)
-                                                (match-end 1)
-                                                ?μ) nil)))))
-    (font-lock-add-keywords
      'clojure-mode `(("(\\(fn\\>\\)"
                       (0 (progn (compose-region (match-beginning 1)
                                                 (match-end 1)
                                                 ?λ) nil)))))
-    (font-lock-add-keywords
-     'clojure-mode `(("(\\(defn\\>\\)"
-                      (0 (progn (compose-region (match-beginning 1)
-                                                (match-end 1)
-                                                ?ζ) nil)))))
-    (font-lock-add-keywords
-     'clojure-mode `(("(\\(atom\\>\\)"
-                      (0 (progn (compose-region (match-beginning 1)
-                                                (match-end 1)
-                                                ?☢) nil)))))
-    (font-lock-add-keywords
-     'clojure-mode `(("(\\(contains\\?\\>\\)"
-                      (0 (progn (compose-region (match-beginning 1)
-                                                (match-end 1)
-                                                ?∈) nil)))))
-
     (font-lock-add-keywords
      'clojure-mode `(("\\(#\\)("
                       (0 (progn (compose-region (match-beginning 1)
@@ -515,100 +499,165 @@ isn't there and triggers an error"
                                 nil))))))
 
   (add-hook 'clojure-mode-hook 'clojure-pretty-fn)
-  (add-hook 'clojure-mode-hook
-            (lambda ()
-              (put 's/defn 'clojure-doc-string-elt 4)))
+  ;; (add-hook 'clojure-mode-hook
+  ;;           (lambda ()
+  ;;             (put 's/defn 'clojure-doc-string-elt 4)))
+  )
 
-  (use-package cider :ensure t :pin melpa
-    :bind (:map cider-mode-map
-           ("C-c t" . cider-toggle-trace-var)
-           ("C-c i" . cider-inspect)
-           ("C-c C-z" . cider-switch-to-repl-connection-buffer)
-           ("C-c C-e" . cider-eval-last-sexp-in-context)
-           ("C-c C-t M-." . cider-test-jump-to-function-test)
-           ("C-c C-t a" . cider-test-macroexpand-are))
-    :commands (cider-connect cider-jack-in)
+(use-package cider :ensure t ; :pin melpa-stable
+  :bind (:map
+         cider-mode-map
+         ("C-c t" . cider-toggle-trace-var)
+         ("C-c i" . cider-inspect)
+         ;; ("C-c C-z" . cider-switch-to-repl-connection-buffer)
+         ("C-c C-e" . cider-eval-last-sexp-in-context)
+         ("C-c C-t M-." . cider-test-jump-to-function-test)
+         ("C-c C-t a" . cider-test-macroexpand-are)
+         ("C-c C-s w" . sesman-pop-browser)
+
+         :map
+         cider-repl-mode-map
+         ("C-c C-l" . cider-repl-clear-buffer))
+  :commands (cider-connect cider-jack-in)
+  :config
+  (add-hook 'cider-mode-hook 'eldoc-mode)
+
+  (add-hook 'cider-repl-mode-hook #'company-mode)
+  (add-hook 'cider-mode-hook #'company-mode)
+  (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+  (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
+  (add-hook 'cider-repl-mode-hook (lambda () (auto-complete-mode -1)))
+  (add-hook 'cider-mode-hook (lambda () (auto-complete-mode -1)))
+
+  (use-package cider-inspector :demand t
+    :bind (:map cider-inspector-mode-map
+                (";" . cider-inspector-next-inspectable-object)
+                ("p" . cider-inspector-previous-inspectable-object)
+                ("C-;" . cider-inspector-operate-on-point)
+                ("C-p" . cider-inspector-pop)
+                ("r" . cider-reinspect)))
+
+  (use-package sesman
+    :bind (:map sesman-browser-mode-map
+                ("q" . sesman-browser-close-browser)
+                ("k" . sesman-browser-quit-session))
     :config
-    (add-hook 'cider-mode-hook 'eldoc-mode)
+    (defvar sesman--window-config-coming-from nil)
+    (defun sesman--restore-window-config ()
+      (when sesman--window-config-coming-from
+        (let ((frame (selected-frame)))
+          (unwind-protect
+	      (set-window-configuration sesman--window-config-coming-from)
+	    (select-frame frame)))
+        (setq bs--window-config-coming-from nil)))
 
-    (use-package company :ensure t :demand t
-      :bind (:map company-mode-map
-             ("TAB" . company-indent-or-complete-common)
-             ("M-SPC" . company-complete)
-
-             :map company-active-map
-             ("TAB" . company-complete-selection)
-             ("<tab>" . company-complete-selection))
-      :config
-      (add-hook 'cider-repl-mode-hook #'company-mode)
-      (add-hook 'cider-mode-hook #'company-mode)
-      (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
-      (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
-      (add-hook 'cider-repl-mode-hook (lambda () (auto-complete-mode -1)))
-      (add-hook 'cider-mode-hook (lambda () (auto-complete-mode -1)))
-
-      (use-package company-quickhelp :ensure t :demand t
-        :config
-        (company-quickhelp-mode 1)))
-
-    (use-package cider-inspector :demand t
-      :bind (:map cider-inspector-mode-map
-             (";" . cider-inspector-next-inspectable-object)
-             ("p" . cider-inspector-previous-inspectable-object)
-             ("C-;" . cider-inspector-operate-on-point)
-             ("C-p" . cider-inspector-pop)
-             ("r" . cider-reinspect)))
-
-    (defun cider-inspect-usual ()
+    (defun sesman-browser ()
+      "Display an interactive session browser.
+See `sesman-browser-mode' for more details."
       (interactive)
-      (when-let ((expression (cider-read-from-minibuffer "Inspect expression: "
-                                                         (cider-sexp-at-point))))
-        (cider-inspect-expr expression (cider-current-ns))))
+      (let* ((system (sesman--system))
+             (pop-to (called-interactively-p 'any))
+             (sessions (sesman-sessions system))
+             (cur-session (when pop-to
+                            (sesman-current-session 'CIDER)))
+             (buff (get-buffer-create (format "*sesman %s browser*" system))))
+        (with-current-buffer buff
+          (setq-local sesman-system system)
+          (sesman-browser-mode)
+          (cursor-sensor-mode 1)
+          (let ((inhibit-read-only t)
+                (sessions (pcase sesman-browser-sort-type
+                            ('name (seq-sort (lambda (a b) (string-greaterp (car b) (car a)))
+                                             sessions))
+                            ('relevance (sesman--sort-sessions system sessions))
+                            (_ (error "Invalid `sesman-browser-sort-type'"))))
+                (i 0))
+            (erase-buffer)
+            (insert "\n ")
+            (insert (propertize (format "%s Sessions:" system)
+                                'face '(bold font-lock-keyword-face)))
+            (insert "\n\n")
+            (dolist (ses sessions)
+              (setq i (1+ i))
+              (sesman-browser--insert-session system ses i))
+            ;; (when pop-to
+            ;;   (pop-to-buffer buff)
+            ;;   (sesman-browser--goto-stop (car cur-session)))
+            (sesman-browser--sensor-function)))))
 
-    (defvar cider-inspect-last-inspected-expr nil)
-
-    (defun cider-inspect-last-sexp ()
-      "Inspect the result of the the expression preceding point."
+    (defun sesman-pop-browser ()
       (interactive)
-      (let ((expr (cider-last-sexp)))
-        (setq cider-inspect-last-inspected-expr expr)
-        (cider-inspect-expr expr (cider-current-ns))))
+      (sesman--restore-window-config)
+      (setq sesman--window-config-coming-from (current-window-configuration))
+      (when (> (window-height) 7)
+        (ignore-errors (select-window (split-window-below))))
+      (sesman-browser)
+      (switch-to-buffer (get-buffer-create (format "*sesman %s browser*"
+                                                   (sesman--system)))))
 
-    (defun cider-reinspect ()
-      "Like refresh, but re-evaluates the last expression."
+    (defun sesman-browser-close-browser ()
+      "Quite session at point."
       (interactive)
-      (cider-popup-buffer-quit-function)
-      (cider-inspect-expr cider-inspect-last-inspected-expr (cider-current-ns)))
+      (kill-buffer (current-buffer))
+      (sesman--restore-window-config)))
 
-    (defun cider-switch-to-repl-connection-buffer (&optional set-namespace)
-      (interactive "P")
-      (cider--switch-to-repl-buffer (cider-current-connection) set-namespace))
+  (defvar cider-inspect-last-inspected-expr nil)
 
-    (defun cider-test-jump-to-function-test ()
-      (interactive)
-      (cider-try-symbol-at-point
-       "Symbol"
-       (lambda (var)
-         (let* ((info (cider-var-info var))
-                (ns (nrepl-dict-get info "ns"))
-                (var (nrepl-dict-get info "name")))
-           (cider-find-var nil (concat ns "-test/" var "-test") nil)))))
+  (defun cider-inspect-last-sexp ()
+    "Inspect the result of the the expression preceding point."
+    (interactive)
+    (let ((expr (cider-last-sexp)))
+      (setq cider-inspect-last-inspected-expr expr)
+      (cider-inspect-expr expr (cider-current-ns))))
 
-    (defun cider-test-macroexpand-are ()
-      (interactive)
-      (cider-macroexpand-1-inplace)
-      (cider-macroexpand-1-inplace))
+  (defun cider-reinspect ()
+    "Like refresh, but re-evaluates the last expression."
+    (interactive)
+    (cider-popup-buffer-quit-function)
+    (cider-inspect-expr cider-inspect-last-inspected-expr (cider-current-ns)))
 
-  (use-package clj-refactor :ensure t :pin melpa-stable
+  ;; (defun cider-switch-to-repl-connection-buffer (&optional set-namespace)
+  ;;   (interactive "P")
+  ;;   (cider--switch-to-repl-buffer (cider-current-connection) set-namespace))
+
+  (defun cider-test-jump-to-function-test ()
+    (interactive)
+    (cider-try-symbol-at-point
+     "Symbol"
+     (lambda (var)
+       (let* ((info (cider-var-info var))
+              (ns (nrepl-dict-get info "ns"))
+              (var (nrepl-dict-get info "name")))
+         (cider-find-var nil (concat ns "-test/" var "-test") nil)))))
+
+  (defun cider-test-macroexpand-are ()
+    (interactive)
+    (cider-macroexpand-1-inplace)
+    (cider-macroexpand-1-inplace)))
+
+(use-package company :ensure t :demand t
+  :bind (:map company-mode-map
+              ("TAB" . company-indent-or-complete-common)
+              ("M-SPC" . company-complete)
+
+              :map company-active-map
+              ("TAB" . company-complete-selection)
+              ("<tab>" . company-complete-selection))
+  :config
+  (use-package company-quickhelp :ensure t :demand t
     :config
-    (cljr-add-keybindings-with-prefix "C-c C-r")
-    (add-hook 'clojure-mode-hook (lambda () (clj-refactor-mode 1)))
-    (add-hook 'clojure-mode-hook 'yas-minor-mode-on)
+    (company-quickhelp-mode 1)))
 
-    (use-package yasnippet :demand t
-      :init
-      (define-key yas-minor-mode-map [(tab)] nil)
-      (define-key yas-minor-mode-map (kbd "TAB") nil))))
+(use-package clj-refactor :ensure t
+  :config
+  (cljr-add-keybindings-with-prefix "C-c C-r")
+  (add-hook 'clojure-mode-hook (lambda () (clj-refactor-mode 1)))
+  (add-hook 'clojure-mode-hook 'yas-minor-mode-on)
+
+  (use-package yasnippet :demand t
+    :init
+    (define-key yas-minor-mode-map [(tab)] nil)
+    (define-key yas-minor-mode-map (kbd "TAB") nil)))
 
 (use-package auto-complete-config
   :commands ac-config-default
@@ -627,6 +676,7 @@ isn't there and triggers an error"
     (eval-after-load "auto-complete"
       '(add-to-list 'ac-modes 'slime-repl-mode)))
   (setq slime-contribs '(slime-asdf))
+  (slime-setup '(slime-autodoc))
   (slime-setup '(slime-fancy slime-scratch slime-editing-commands
                              slime-fuzzy slime-repl slime-fancy-inspector
                              slime-presentations slime-asdf
@@ -672,31 +722,7 @@ isn't there and triggers an error"
 
 (use-package hcl-mode :ensure t :demand t)
 
-(use-package rockerfile-mode :demand t
-  :config
-  (use-package flycheck :ensure t :demand t)
-  (defconst flycheck-rockerlint-form
-    (flycheck-prepare-emacs-lisp-form
-      (require 'package)
-      (package-initialize)
-      (require 'rockerlint)
-
-      (let ((source (car command-line-args-left))
-            ;; Remember the default directory of the process
-            (process-default-directory default-directory))
-        (rockerlint-lint source))))
-
-  (flycheck-define-checker rockerlint-checker
-    "Rockerfile checker."
-    :command ("emacs" "-Q" "-batch" "-L" "~/.emacs.d/site-lisp/"
-              "--eval" (eval flycheck-rockerlint-form)
-              "--" source)
-    :error-patterns
-    ((error line-start line ":" column ": " (message) line-end))
-    :modes (rockerfile-mode))
-
-  (push 'rockerlint-checker flycheck-checkers)
-  (add-hook 'rockerfile-mode-hook (lambda () (flycheck-mode 1))))
+(use-package rockerfile-mode :demand t)
 
 (use-package rust-mode :ensure t)
 
@@ -741,6 +767,12 @@ isn't there and triggers an error"
 
 (use-package elm-mode :ensure t)
 
+(use-package yaml-mode :ensure t)
+
+(use-package haskell-mode :ensure t)
+
+(use-package groovy-mode :ensure t)
+
 ;;; Programming/Miscellaneous
 
 (use-package rainbow-mode :ensure t
@@ -783,10 +815,10 @@ isn't there and triggers an error"
   :bind* (("M-h" . helm-do-ag-project-root-custom)
           ("M-H" . helm-do-ag))
   :bind (:map helm-ag-map
-         ("C-;" . helm-next-line)
-         ("M-;" . helm-goto-next-file)
-         ("M-p" . helm-goto-precedent-file)
-         ("<right>" . helm-execute-persistent-action))
+              ("C-;" . helm-next-line)
+              ("M-;" . helm-goto-next-file)
+              ("M-p" . helm-goto-precedent-file)
+              ("<right>" . helm-execute-persistent-action))
   :config
   (defun helm-do-ag-project-root-custom (sym-at-p)
     (interactive "P")
@@ -966,23 +998,28 @@ the (^:fold ...) expressions."
   (cider-connect "phantasm-dev.grammarly.io" 9999 nil))
 
 (setq grammarly-cider-services
-      '(("phantasm" . ("phantasm-dev.grammarly.io" 9999))
-        ("feedbacks-pipeline" . ("feedbacks.cpgr.io" 9999))
-        ("thesaurus" . ("thesaurus.cpgr.io" 9999))
-        ("livestream" . ("livestream.cpgr.io" 9999))))
+      '(("phantasm" . "phantasm.gnlp.io")
+        ("feedbacks-pipeline" . "feedbacks.cpgr.io")
+        ("thesaurus" . "thesaurus.cpgr.io")
+        ("livestream" . "livestream.cpgr.io")))
+
+(defvar grammarly-cider-connect-history ())
 
 (defun grammarly-cider-connect-read-server-name ()
   (let* ((choices (mapcar #'car grammarly-cider-services))
          (minibuffer-completion-table choices)
          (ido-max-prospects 10))
-    (ido-completing-read "Server: " choices nil nil
-                         nil 'extended-command-history (car choices))))
+    (let ((answer
+           (ido-completing-read "Server: " choices nil nil
+                                nil 'grammarly-cider-connect-history (car choices))))
+      (if-let (server (cdr (assoc answer grammarly-cider-services)))
+          server
+        answer))))
 
 (defun grammarly-cider-connect ()
   (interactive)
-  (let ((server (grammarly-cider-connect-read-server-name)))
-    (destructuring-bind (_ host port) (assoc server grammarly-cider-services)
-      (cider-connect host port))))
+  (let* ((server (grammarly-cider-connect-read-server-name)))
+    (cider-connect (list :host server :port 9999))))
 
 ;; Customizations
 
