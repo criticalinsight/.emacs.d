@@ -75,6 +75,8 @@
 
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
 (add-to-list 'load-path "~/.emacs.d/site-lisp/sunrise-commander/")
+(add-to-list 'load-path "~/.emacs.d/site-lisp/org-reveal/")
+;; (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-grammarly-mode/")
 
 (load-file "~/.emacs.d/bindings.el") ;; Load bindings
 
@@ -150,6 +152,13 @@
     (let ((ido-report-no-match nil)
           (ido-auto-merge-work-directories-length -1))
       (ido-file-internal 'read-only 'sr-advertised-find-file nil "Sunrise: " 'dir)))
+
+  (defun sunrise-reset-directories ()
+    "To be used if the remembered directories are non-existent."
+    (interactive)
+    (setq sr-left-directory "~")
+    (setq sr-right-directory "~")
+    (sunrise))
 
   ;; Also auto refresh dired, but be quiet about it
   (setq global-auto-revert-non-file-buffers t)
@@ -341,6 +350,7 @@ isn't there and triggers an error"
   :commands (magit-show-commit)
   :config
   (setq magit-last-seen-setup-instructions "1.4.0")
+  (setq magit-section-visibility-indicator nil)
   (remove-hook 'magit-status-sections-hook 'magit-insert-stashes)
   (magit-add-section-hook 'magit-status-sections-hook
                           'magit-insert-stashes 'magit-insert-untracked-files)
@@ -526,8 +536,8 @@ isn't there and triggers an error"
   (add-hook 'cider-mode-hook #'company-mode)
   (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
   (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
-  (add-hook 'cider-repl-mode-hook (lambda () (auto-complete-mode -1)))
-  (add-hook 'cider-mode-hook (lambda () (auto-complete-mode -1)))
+  ;; (add-hook 'cider-repl-mode-hook (lambda () (auto-complete-mode -1)))
+  ;; (add-hook 'cider-mode-hook (lambda () (auto-complete-mode -1)))
 
   (use-package cider-inspector :demand t
     :bind (:map cider-inspector-mode-map
@@ -620,6 +630,21 @@ See `sesman-browser-mode' for more details."
   ;;   (interactive "P")
   ;;   (cider--switch-to-repl-buffer (cider-current-connection) set-namespace))
 
+  ;; Prevent CIDER from jumping to source in other window.
+  (defun cider--jump-to-loc-from-info-always-same-window (orig-fn info &rest _)
+    (funcall orig-fn info))
+
+  (advice-add 'cider--jump-to-loc-from-info :around #'cider--jump-to-loc-from-info-always-same-window)
+
+  (defun cider--switch-to-nrepl-server-when-jack-in (orig-fn params &rest _)
+    (let ((process (funcall orig-fn params)))
+      (switch-to-buffer (process-buffer process))
+      (insert "\n\n===\n\nPlease wait...\n")
+      (beginning-of-buffer)))
+
+  (advice-add 'cider-jack-in-clj :around #'cider--switch-to-nrepl-server-when-jack-in)
+  ;; (advice-remove 'cider-jack-in-clj 'cider--jump-to-nrepl-server-when-jack-in)
+
   (defun cider-test-jump-to-function-test ()
     (interactive)
     (cider-try-symbol-at-point
@@ -630,20 +655,73 @@ See `sesman-browser-mode' for more details."
               (var (nrepl-dict-get info "name")))
          (cider-find-var nil (concat ns "-test/" var "-test") nil)))))
 
+  ;; Temp hack for setting boot.user namespace on startup.
+  (defun cider-repl--set-initial-ns (buffer)
+    (with-current-buffer buffer
+      (cider-set-buffer-ns "boot.user")))
+
   (defun cider-test-macroexpand-are ()
     (interactive)
     (cider-macroexpand-1-inplace)
-    (cider-macroexpand-1-inplace)))
+    (cider-macroexpand-1-inplace))
+
+  (defun find-all-files (dir)
+    "Open all files and sub-directories below the given directory."
+    (interactive "DBase directory: ")
+    (let* ((list (directory-files dir t "^[^.]"))
+           (files (remove-if 'file-directory-p list))
+           (dirs (remove-if-not 'file-directory-p list)))
+      (dolist (file files)
+        (find-file-noselect file))
+      (dolist (dir dirs)
+        (find-file-noselect dir)
+        (find-all-files dir))))
+
+  (defun cider-boot-get-java-dirs ()
+    (interactive)
+    (let ((prefix (read-from-string (nrepl-dict-get (cider-nrepl-sync-request:eval "(boot.core/get-env :java-source-path)") "value"))))
+      (remove-if-not (lambda (f) (string-suffix-p ".java" f)) (projectile-current-project-files))
+      )
+    )
+
+  (defun cider-list-java-files-in-project ()
+    "Compiles the currently open .java class against the active REPL."
+    (interactive)
+
+
+    (cider-interactive-eval
+     (format "(grammarly.boot-tasks.javac/compile-java [] (javax.tools.DiagnosticCollector.)
+{\"grammarly.sprawl.Test2\" %s})" (prin1-to-string (buffer-substring-no-properties (point-min) (point-max))))
+     nil nil))
+
+  (defun cider-compile-javaclass-remotely ()
+    "Compiles the currently open .java class against the active REPL."
+    (interactive)
+    (cider-interactive-eval
+     (format "(grammarly.boot-tasks.javac/compile-java [] (javax.tools.DiagnosticCollector.)
+{\"grammarly.sprawl.Test2\" %s})" (prin1-to-string (buffer-substring-no-properties (point-min) (point-max))))
+     nil nil))
+  )
 
 (use-package company :ensure t :demand t
   :bind (:map company-mode-map
-              ("TAB" . company-indent-or-complete-common)
+              ("TAB" . company-indent-or-complete-must-have-prefix)
               ("M-SPC" . company-complete)
 
               :map company-active-map
               ("TAB" . company-complete-selection)
               ("<tab>" . company-complete-selection))
   :config
+  (add-hook 'emacs-lisp-mode-hook 'company-mode)
+
+  (defun company-indent-or-complete-must-have-prefix ()
+    "Indent the current line or region, or complete the common
+part if there is prefix."
+    (interactive)
+    (if (looking-at "\\_>")
+        (company-indent-or-complete-common)
+      (call-interactively #'indent-for-tab-command)))
+
   (use-package company-quickhelp :ensure t :demand t
     :config
     (company-quickhelp-mode 1)))
@@ -661,33 +739,7 @@ See `sesman-browser-mode' for more details."
 
 (use-package auto-complete-config
   :commands ac-config-default
-  :init (add-hook 'prog-mode-hook 'ac-config-default))
-
-(use-package slime :ensure t
-  :commands slime
-  :config
-  (setq-default slime-lisp-implementations
-                '((sbcl ("sbcl" "--dynamic-space-size" "9500"))))
-
-  (use-package ac-slime :ensure t :demand t
-    :init
-    (add-hook 'slime-mode-hook 'set-up-slime-ac)
-    (add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
-    (eval-after-load "auto-complete"
-      '(add-to-list 'ac-modes 'slime-repl-mode)))
-  (setq slime-contribs '(slime-asdf))
-  (slime-setup '(slime-autodoc))
-  (slime-setup '(slime-fancy slime-scratch slime-editing-commands
-                             slime-fuzzy slime-repl slime-fancy-inspector
-                             slime-presentations slime-asdf
-                             slime-indentation))
-  (require 'slime-autoloads))
-
-(use-package aggressive-indent :ensure t
-  :commands aggressive-indent-mode
-  :config
-  (add-hook 'lisp-mode-hook 'aggressive-indent-mode)
-  (add-hook 'clojure-mode-hook 'aggressive-indent-mode))
+  :init (add-hook 'lisp-mode-hook 'ac-config-default))
 
 (use-package comment-sexp :demand t)
 
@@ -740,6 +792,10 @@ See `sesman-browser-mode' for more details."
          ("C-c C-l" . markdown-smart-insert-link)
          ("C-c C-c C-c" . markdown-insert-gfm-code-block))
   :config
+  (use-package markdown-preview-mode :ensure t
+    :config
+    (setq markdown-preview-stylesheets (list "http://thomasf.github.io/solarized-css/solarized-light.min.css")))
+
   (defun markdown-smart-insert-link ()
     (interactive)
     (let (link text)
@@ -755,7 +811,21 @@ See `sesman-browser-mode' for more details."
                             ")")))
         (setq link (read-string "Link: "))
         (setq text (read-string "Text: "))
-        (insert (concat "[" (if (string= text "") link text) "](" link ")"))))))
+        (insert (concat "[" (if (string= text "") link text) "](" link ")")))))
+
+  (defvar github-link-to-issue-history ())
+  (defun github-link-to-issue ()
+    (interactive)
+    (let* ((choices (mapcar #'car grammarly-cider-services))
+           (minibuffer-completion-table choices)
+           (ido-max-prospects 10))
+      (let* ((issue (buffer-substring-no-properties (region-beginning) (region-end)))
+             (number (substring issue 1))
+             (repo
+              (ido-completing-read "Github repository: " nil nil nil
+                                   nil 'github-link-to-issue-history (car github-link-to-issue-history))))
+        (delete-region (region-beginning) (region-end))
+        (insert (format "[%s](https://github.com/%s/issues/%s)" issue repo number))))))
 
 (use-package terraform-mode :ensure t)
 
@@ -769,9 +839,9 @@ See `sesman-browser-mode' for more details."
 
 (use-package yaml-mode :ensure t)
 
-(use-package haskell-mode :ensure t)
-
 (use-package groovy-mode :ensure t)
+
+(use-package json-mode :ensure t)
 
 ;;; Programming/Miscellaneous
 
@@ -792,10 +862,12 @@ See `sesman-browser-mode' for more details."
   :init
   (defvar last-ido-dir nil)
 
-  (defun find-file-at-point (&optional _)
-    (interactive)
-    (let ((default-directory last-ido-dir))
-      (projectile-find-file)))
+  ;; (defun find-file-at-point (&optional _)
+  ;;   (interactive)
+  ;;   (let ((projectile-cached-project-root nil)
+  ;;         (projectile-cached-project-name nil)
+  ;;         (default-directory last-ido-dir))
+  ;;     (projectile-find-file)))
 
   (defun projectile-find-file-from-ido ()
     "Invoke p-f-file while interactively opening a file in ido."
@@ -857,10 +929,10 @@ See `sesman-browser-mode' for more details."
 (use-package wakatime-mode :ensure t :demand t
   :config (global-wakatime-mode))
 
-(use-package fill-column-indicator :ensure t :demand t
-  :config
-  (add-hook 'prog-mode-hook 'fci-mode)
-  (add-hook 'clojure-mode-hook 'fci-mode))
+;; (use-package fill-column-indicator :ensure t :demand t
+;;   :config
+;;   (add-hook 'prog-mode-hook 'fci-mode)
+;;   (add-hook 'clojure-mode-hook 'fci-mode))
 
 (use-package hideshow :ensure t :demand t
   :config
@@ -908,15 +980,11 @@ the (^:fold ...) expressions."
   :bind (:map org-mode-map
          ("C-'" . forward-char))
   :config
-  (use-package ox-reveal :ensure t
+  (use-package ox-reveal
     :demand t
     :config
     (setq org-reveal-root (expand-file-name "~/Software/reveal-js")))
   (setq org-inhibit-startup-visibility-stuff t))
-
-(use-package thesaurus :ensure t
-  :bind (("C-x t" . thesaurus-choose-synonym-and-replace))
-  :config (thesaurus-set-bhl-api-key-from-file "~/.bighugelabsapi.key"))
 
 (use-package centered-window-mode :ensure t
   :config
@@ -970,10 +1038,6 @@ the (^:fold ...) expressions."
   (add-hook 'java-mode-hook 'flyspell-prog-mode)
   (add-hook 'lua-mode-hook 'flyspell-prog-mode)
   (add-hook 'lisp-mode-hook 'flyspell-prog-mode))
-
-(use-package langtool :ensure t :demand t
-  :config
-  (setq langtool-java-classpath "/usr/share/languagetool:/usr/share/java/languagetool/*"))
 
 (use-package ascii-one-liners :demand t)
 
@@ -1056,6 +1120,54 @@ the (^:fold ...) expressions."
 
 (setq browse-url-browser-function (quote browse-url-generic))
 (setq browse-url-generic-program "open")
+
+;; Disabled
+
+;; (use-package slime :ensure t
+;;   :commands slime
+;;   :config
+;;   (setq-default slime-lisp-implementations
+;;                 '((sbcl ("sbcl" "--dynamic-space-size" "9500"))))
+
+;;   (use-package ac-slime :ensure t :demand t
+;;     :init
+;;     (add-hook 'slime-mode-hook 'set-up-slime-ac)
+;;     (add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
+;;     (eval-after-load "auto-complete"
+;;       '(add-to-list 'ac-modes 'slime-repl-mode)))
+;;   (setq slime-contribs '(slime-asdf))
+;;   (slime-setup '(slime-autodoc))
+;;   (slime-setup '(slime-fancy slime-scratch slime-editing-commands
+;;                              slime-fuzzy slime-repl slime-fancy-inspector
+;;                              slime-presentations slime-asdf
+;;                              slime-indentation))
+;;   (require 'slime-autoloads))
+
+;; (use-package ivy :ensure t :demand t
+;;   :bind (("M-x" . counsel-M-x)
+;;          ;; ("C-x C-f" . counsel-find-file)
+;;          )
+;;   :config
+;;   (ivy-mode 1)
+;;   (setq ivy-use-virtual-buffers t)
+;;   (setq enable-recursive-minibuffers t)
+;;   ;; (global-set-key "\C-s" 'swiper)
+;;   ;; (global-set-key (kbd "C-c C-r") 'ivy-resume)
+;;   ;; (global-set-key (kbd "<f6>") 'ivy-resume)
+;;   ;; (global-set-key (kbd "M-x") 'counsel-M-x)
+;;   ;; (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+;;   ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+;;   ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+;;   ;; (global-set-key (kbd "<f1> l") 'counsel-find-library)
+;;   ;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+;;   ;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+;;   ;; (global-set-key (kbd "C-c g") 'counsel-git)
+;;   ;; (global-set-key (kbd "C-c j") 'counsel-git-grep)
+;;   ;; (global-set-key (kbd "C-c k") 'counsel-ag)
+;;   ;; (global-set-key (kbd "C-x l") 'counsel-locate)
+;;   ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+;;   ;; (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+;;   )
 
 ;; Local Variables:
 ;; eval: (hs-hide-all)

@@ -3,18 +3,18 @@
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (list nil nil)))
-  (let ((p (point))
-        (beg (or beg (progn
-                       (move-beginning-of-line 1)
-                       (point))))
-        (end (or end (progn
-                       (move-end-of-line 1)
-                       (point)))))
-    (copy-region-as-kill beg end)
-    (comment-region beg end)
-    (goto-char beg)
-    (open-line 1)
-    (yank)))
+  (save-excursion
+   (let ((beg (or beg (progn
+                        (move-beginning-of-line 1)
+                        (point))))
+         (end (or end (progn
+                        (move-end-of-line 1)
+                        (point)))))
+     (copy-region-as-kill beg end)
+     (comment-region beg end)
+     (goto-char beg)
+     (open-line 1)
+     (yank))))
 
 (defun indent-buffer ()
   (interactive)

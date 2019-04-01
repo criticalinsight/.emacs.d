@@ -40,8 +40,8 @@
     "M-l" backward-word
     "M-'" forward-word
 
-    "C-M-'" forward-list
-    "C-M-l" backward-list
+    "C-M-'" forward-sexp
+    "C-M-l" backward-sexp
 
     "C-a" move-beginning-of-line
 
@@ -76,13 +76,13 @@
     "C-c r" revert-buffer
     "C-M-=" comment-or-uncomment-sexp
     "C-c C-l" goto-last-change
+    "s--" (lambda () (interactive) (insert "—"))
 
     ;;; Buffer manipulation
     "C-x <C-return>" other-window
     "C-\\" kill-this-buffer
 
     "C-n" create-temp-buffer
-    "C-M-z" hydra-scale-text/body
     "C-x 0" (lambda () (interactive) (other-window -1))
     "<S-left>" windmove-left
     "<S-right>" windmove-right
@@ -112,6 +112,8 @@
     "M-;" paredit-forward-down
     "C-M-p" paredit-backward-up
     "C-M-;" paredit-forward-up
+    "C-M-'" forward-sexp
+    "C-M-l" backward-sexp
     ;; "C-M-q" beginning-of-defun
     "M-a" highlight-symbol-prev
     ;; "M-q" highlight-symbol-prev
